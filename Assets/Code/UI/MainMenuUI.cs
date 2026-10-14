@@ -8,7 +8,8 @@ namespace Assets.Code.UI
 {
   /// <summary>
   /// Responsible for showing and hiding the main menu UI as well as handling
-  /// any interactions with it.
+  /// any interactions with it. A button's click is dispatched through
+  /// <see cref="MainMenuActions.Dispatch"/>, the one entry point.
   /// </summary>
   class MainMenuUI
   {
@@ -63,6 +64,26 @@ namespace Assets.Code.UI
     }
 
     /// <summary>
+    /// The flow's own call: this screen is up exactly when the flow's state
+    /// names it. Showing it here does not start its music cue - Main owns that,
+    /// because the menu's play list must start with the menu and not restart on
+    /// a return to it (S2MMusicPlayer.Play always begins at the list's first
+    /// item).
+    /// </summary>
+    public void SetShown(bool shown)
+    {
+      if (shown)
+      {
+        if (!IsShown) Show();
+        UpdateLayout();
+      }
+      else if (IsShown)
+      {
+        Hide();
+      }
+    }
+
+    /// <summary>
     /// Creates the logo that appears above the menu buttons along the curtains video
     /// </summary>
     private void CreateLogo()
@@ -79,16 +100,20 @@ namespace Assets.Code.UI
     }
 
     /// <summary>
-    /// Creates the menu buttons that appear along the curtains video
+    /// Creates the menu buttons that appear along the curtains video - one per
+    /// shipped action (MainMenuActions.All: Play, Multiplayer, Map Editor,
+    /// Options, Load, Exit), in that order.
     /// </summary>
     private void CreateMenuButtons()
     {
-      CreateMenuButton("Play");
-      CreateMenuButton("Multiplayer");
-      CreateMenuButton("Map Editor");
-      CreateMenuButton("Options");
-      CreateMenuButton("Load");
-      CreateMenuButton("Exit");
+      // The surface is being built, so its dispatch record starts here too: the
+      // record always describes the menu that is on screen.
+      MainMenuActions.ResetRecord();
+
+      foreach (MainMenuActionInfo info in MainMenuActions.All)
+      {
+        CreateMenuButton(info);
+      }
     }
 
     private void CreateUiRoot()
@@ -137,9 +162,9 @@ namespace Assets.Code.UI
       layoutGroup.padding = new RectOffset(10, 30, 30, 50);
     }
 
-    private void CreateMenuButton(string buttonText)
+    private void CreateMenuButton(MainMenuActionInfo info)
     {
-      GameObject buttonObject = new(buttonText + "Button");
+      GameObject buttonObject = new(info.Label + "Button");
       buttonObject.transform.SetParent(menuColumn, false);
 
       Image buttonImage = buttonObject.AddComponent<Image>();
@@ -150,6 +175,14 @@ namespace Assets.Code.UI
       Button button = buttonObject.AddComponent<Button>();
       button.targetGraphic = buttonImage;
       button.transition = Selectable.Transition.None;
+
+      // The button's own UnityEvent is the ONE path a click takes: a player's
+      // press reaches it through the EventSystem (the input module dispatches
+      // the pointer click to this GameObject), a harness fires that same pointer
+      // click, and both land in MainMenuActions.Dispatch - the single entry
+      // point that names the action it dispatched. The action is captured here,
+      // so no button can dispatch another button's action.
+      button.onClick.AddListener(() => MainMenuActions.Dispatch(info.Action));
 
       LayoutElement layoutElement = buttonObject.AddComponent<LayoutElement>();
       //layoutElement.preferredWidth = 320f;
@@ -175,7 +208,7 @@ namespace Assets.Code.UI
       GameObject textObject = new("Label");
       textObject.transform.SetParent(buttonObject.transform, false);
       Text label = textObject.AddComponent<Text>();
-      label.text = buttonText;
+      label.text = info.Label;
       label.alignment = TextAnchor.MiddleCenter;
       label.color = new Color32(255, 244, 214, 255);
       label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");

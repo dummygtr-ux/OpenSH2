@@ -15,3 +15,5 @@ This object is special. It begins a .s2m file. You will first parse an object wi
 	- 03 = peace custom
 	- 04 = free build
 - +4 bytes = Object trailer marker
+
+**Corrected 2026-10-08 (all 67 shipped maps):** the map type int is 0 = kingmaker, **1 = historical** (the 19 `.s2c` castle maps), 2 = war campaign, 3 = peace campaign, 4 = free build — the two tables agree with the file-header `type` string on every file. See [VariantPayloads](./Actions%20and%20Triggers/VariantPayloads.md).

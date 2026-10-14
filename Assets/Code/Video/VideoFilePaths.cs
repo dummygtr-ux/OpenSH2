@@ -25,13 +25,30 @@ namespace Assets.Code.Video
       { MainMenuCurtainOpen, Converter.OutputFormatWebM },
       { MainMenuCurtainIdle, Converter.OutputFormatWebM },
       { MainMenuBackground, Converter.OutputFormatMp4 },
-      { SeaWater, Converter.OutputFormatMp4 },
-      { RiverWater, Converter.OutputFormatMp4 },
-      { MoatWater, Converter.OutputFormatMp4 },
+      // Unity's Linux video player rejects H.264 MP4 ("format 0 not supported")
+      // but plays VP8 WebM; keep Windows on MP4.
+      { SeaWater, System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+          System.Runtime.InteropServices.OSPlatform.Linux)
+        ? Converter.OutputFormatWebM : Converter.OutputFormatMp4 },
+      { RiverWater, System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+          System.Runtime.InteropServices.OSPlatform.Linux)
+        ? Converter.OutputFormatWebM : Converter.OutputFormatMp4 },
+      { MoatWater, System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+          System.Runtime.InteropServices.OSPlatform.Linux)
+        ? Converter.OutputFormatWebM : Converter.OutputFormatMp4 },
     };
 
     public static string GetCachedVideoOutputFormat(string originalBikPath)
     {
+      // Unity's Linux video player rejects H.264 MP4 ("format 0 not supported")
+      // but plays VP8 WebM; the per-file table below keys off the maintainer's
+      // hardcoded GamePath and cannot match other installations anyway.
+      if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+            System.Runtime.InteropServices.OSPlatform.Linux))
+      {
+        return Converter.OutputFormatWebM;
+      }
+
       if (CachedVideoOutputFormats.TryGetValue(originalBikPath, out string outputFormat))
       {
         return outputFormat;

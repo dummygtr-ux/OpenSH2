@@ -26,7 +26,13 @@ namespace Assets.Code.Caching
       foreach (var asset in VideoFilePaths.CachedVideoOutputFormats)
       {
         string assetFilePath = asset.Key;
-        string outputFormat = asset.Value;
+        // The format comes from the SAME lookup the players resolve their cache
+        // path with. The dictionary's own per-file value is upstream's Windows
+        // table, and on Linux every video is WebM (the Linux VideoPlayer
+        // rejects H.264 MP4) - so writing asset.Value here cached files no
+        // player ever asked for, and the intro/menu videos were silently
+        // "not found" behind it.
+        string outputFormat = VideoFilePaths.GetCachedVideoOutputFormat(assetFilePath);
         string basename = System.IO.Path.GetFileNameWithoutExtension(assetFilePath);
         string cachedVideoPath = Constants.VideoCachePath + "/" + basename + "." + outputFormat;
 

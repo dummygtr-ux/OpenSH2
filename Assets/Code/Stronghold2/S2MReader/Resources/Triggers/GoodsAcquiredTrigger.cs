@@ -5,6 +5,6 @@
   /// </summary>
   internal class GoodsAcquiredTrigger : Trigger
   {
-    public GoodsAmountList Goods { get; set; }
+    public GoodsAmountList Goods { get; set; } = new();
   }
 }

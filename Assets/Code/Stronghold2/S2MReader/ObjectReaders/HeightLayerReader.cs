@@ -6,11 +6,32 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
 {
   internal class HeightLayerReader : ObjectReader
   {
+    // Payload header: {tag=3, headerLength, id, unused, recordCount} with
+    // headerLength = 12 + 16 * recordCount. When recordCount > 0 the 20-byte
+    // header is followed by that many 16-byte pre-marker records (contents
+    // unknown) and only then by the A5 C1 FF FF data payload marker — reading
+    // the marker straight after the header fails on those maps.
+    // Verified on all 67 shipped .s2m/.s2c files: marker offset = 20 +
+    // headerLength - 12 = 20 + 16 * recordCount (war_chapter1 12/0;
+    // war_chapter8 108/6; up to 34 records on World_Europe).
+    private const int HeightLayerHeaderLength = 12;
+    private const int PreMarkerRecordSize = 16;
+
     public HeightLayerReader(S2Object obj) : base(obj) { }
 
     public override S2Object Read(BinaryReader reader)
     {
-      for (int i = 0; i < 5; i++) reader.ReadInt32();
+      reader.ReadInt32();
+      int headerLength = reader.ReadInt32();
+      reader.ReadInt32();
+      reader.ReadInt32();
+      int recordCount = reader.ReadInt32();
+      int preMarkerBytes = headerLength - HeightLayerHeaderLength;
+      if (preMarkerBytes < 0 || preMarkerBytes != recordCount * PreMarkerRecordSize)
+        throw new InvalidDataException(
+          $"HeightLayer header length {headerLength} with {recordCount} pre-marker records does not match the 12 + 16 * recordCount layout.");
+      for (int i = 0; i < preMarkerBytes; i++) reader.ReadByte();
+
       ReadDataPayloadMarker(reader, isEmpty: false);
 
       int valueCount = reader.ReadInt32();

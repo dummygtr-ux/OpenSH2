@@ -16,9 +16,12 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders.TriggerReaders
       OutlawCampDestroyedTrigger obj = new();
 
       ReadTriggerHeader(reader);
-      ReadDataPayloadMarker(reader, false);
-
-      reader.ReadInt32(); // Unknown, always 0
+      // All 4 shipped instances use the empty-payload shape: the marker is
+      // followed by just the instance index and then the trailer (29 bytes total).
+      // The old reader also consumed an int after the marker block, which read the
+      // trailer and threw "Invalid object terminator".
+      int payloadByteCount = ReadDataPayloadMarker(reader, false);
+      reader.ReadBytes(payloadByteCount);
 
       ReadObjectTrailerMarker(reader);
 

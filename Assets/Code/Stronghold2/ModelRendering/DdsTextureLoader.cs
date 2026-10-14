@@ -38,6 +38,17 @@ namespace Assets.Code.Stronghold2.ModelRendering
         _ => throw new NotSupportedException($"DDS compression/pixel format {fourCc} is not supported yet.")
       };
 
+      // Temporary decode-dump instrumentation for the texture corruption investigation.
+      string dumpName = Path.GetFileNameWithoutExtension(path);
+      if (dumpName == "grass_lush" || dumpName == "Tree009_mask")
+      {
+        var dumpTex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        dumpTex.SetPixels32(pixels);
+        dumpTex.Apply();
+        System.IO.File.WriteAllBytes("/tmp/sh2-texdump-" + dumpName + ".png", dumpTex.EncodeToPNG());
+        UnityEngine.Object.DestroyImmediate(dumpTex);
+      }
+
       var texture = new Texture2D(width, height, TextureFormat.RGBA32, false)
       {
         name = Path.GetFileNameWithoutExtension(path),

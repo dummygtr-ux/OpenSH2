@@ -42,12 +42,17 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
       // Read unknown single byte after map file name
       reader.ReadByte();
 
-      // Read map type
+      // Read map type. Values verified across all 67 shipped maps:
+      // kingmaker=0, historical=1, warcampaign=2, peacecampaign=3, freebuild=4.
       int mapType = reader.ReadInt32();
 
       if (mapType == 0)
       {
         obj.MapType = MapType.Kingmaker;
+      }
+      else if (mapType == 1)
+      {
+        obj.MapType = MapType.Historical;
       }
       else if (mapType == 2)
       {
@@ -57,7 +62,7 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
       {
         obj.MapType = MapType.PeaceCampaign;
       }
-      else if (mapType == 3)
+      else if (mapType == 4)
       {
         obj.MapType = MapType.FreeBuild;
       }

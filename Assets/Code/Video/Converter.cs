@@ -18,7 +18,12 @@ public class Converter
   /// <param name="outputFormat">The desired output format. Supported values are "mp4" and "webm".</param>
   public static void Convert(string inputFilePath, string outputFilePath, string outputFormat)
   {
-    string locationOfFFMPEG = Application.dataPath + "/External/ffmpeg-windows/bin/ffmpeg.exe";
+    // Linux ships a full native ffmpeg (libx264/libvpx included); the bundled
+    // binary is a Windows build and cannot execute there.
+    string locationOfFFMPEG = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+      System.Runtime.InteropServices.OSPlatform.Linux)
+      ? "ffmpeg"
+      : Application.dataPath + "/External/ffmpeg-windows/bin/ffmpeg.exe";
     string normalizedOutputFormat = (outputFormat ?? OutputFormatMp4).Trim().ToLowerInvariant();
 
     string ffmpegArguments;

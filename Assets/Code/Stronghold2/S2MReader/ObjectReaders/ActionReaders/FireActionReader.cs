@@ -16,7 +16,16 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders.ActionReaders
       FireAction obj = new();
 
       ReadActionHeader(reader);
-      ReadDataPayloadMarker(reader, true);
+      // FireAction carries data (the payload byte count is 4), so the payload
+      // marker is followed by the {unknown, byte count} pair — unlike the
+      // empty-payload actions such as WinAction.
+      int payloadByteCount = ReadDataPayloadMarker(reader, false);
+      if (payloadByteCount >= sizeof(int))
+      {
+        obj.NumFires = reader.ReadInt32();
+        reader.ReadBytes(payloadByteCount - sizeof(int));
+      }
+
       ReadObjectTrailerMarker(reader);
 
       return obj;

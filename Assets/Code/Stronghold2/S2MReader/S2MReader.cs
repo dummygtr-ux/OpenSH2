@@ -71,6 +71,7 @@ namespace Assets.Code.Stronghold2.S2MReader
           if (i == 1 && parsed is EstateLayer radarEstateLayer) MapFile.RadarEstateLayer = radarEstateLayer;
           if (parsed is Landscape landscape) MapFile.Landscape = landscape;
           if (parsed is Forest forest) MapFile.Forest = forest;
+          if (parsed is BuildingLayer buildingLayer) MapFile.BuildingLayer = buildingLayer;
           if (parsed is HeightLayer heightLayer)
           {
             MapFile.HeightLayer = heightLayer;
@@ -122,6 +123,11 @@ namespace Assets.Code.Stronghold2.S2MReader
       else if (mapTypeString == "freebuild")
       {
         MapFile.MapType = Enums.MapType.FreeBuild;
+      }
+      else if (mapTypeString == "historical")
+      {
+        // The 19 .s2c "historical castle" maps carry this file-header type.
+        MapFile.MapType = Enums.MapType.Historical;
       }
       else
       {
@@ -250,6 +256,7 @@ namespace Assets.Code.Stronghold2.S2MReader
         "HeightLayer" => new HeightLayerReader(obj),
         "Landscape" => new LandscapeReader(obj),
         "Forest" => new ForestReader(obj),
+        "BuildingLayer" => new BuildingLayerReader(obj),
 
         // Actions
         "AITroopRetreatAction" => new AITroopRetreatActionReader(obj),
@@ -264,6 +271,8 @@ namespace Assets.Code.Stronghold2.S2MReader
         "ConvertEstateToVillageAction" => new ConvertEstateToVillageActionReader(obj),
         "CreateCriminalsAction" => new CreateCriminalsActionReader(obj),
         "CrimeRateAction" => new CrimeRateActionReader(obj),
+        "CustomActionPlayCutScene" => new CustomActionPlayCutSceneReader(obj),
+        "CustomActionStopWolfMessages" => new CustomActionStopWolfMessagesReader(obj),
         "CustomActionTakeWilliamsTroops" => new CustomActionTakeWilliamsTroopsReader(obj),
         "DiseaseProductionAction" => new DiseaseProductionActionReader(obj),
         "EnterBriefingAction" => new EnterBriefingActionReader(obj),
@@ -272,6 +281,7 @@ namespace Assets.Code.Stronghold2.S2MReader
         "GiveHonourAction" => new GiveHonourActionReader(obj),
         "GiveResourcesAction" => new GiveResourcesActionReader(obj),
         "GongInfestationAction" => new GongInfestationActionReader(obj),
+        "GongInvasionAction" => new GongInvasionActionReader(obj),
         "GongProductionAction" => new GongProductionActionReader(obj),
         "HopWeevilAction" => new HopWeevilActionReader(obj),
         "InvasionAction" => new InvasionActionReader(obj),
@@ -308,6 +318,8 @@ namespace Assets.Code.Stronghold2.S2MReader
         "SuperAggressiveTroopsAction" => new SuperAggressiveTroopsActionReader(obj),
         "SwineFeverAction" => new SwineFeverActionReader(obj),
         "TakeEnemyCastleAction" => new TakeEnemyCastleActionReader(obj),
+        // The shipped spelling carries an extra "s"; a distinct class from the one above.
+        "TakeEnemysCastleAction" => new TakeEnemysCastleActionReader(obj),
         "TimeUntilFinalInvasionAction" => new TimeUntilFinalInvasionActionReader(obj),
         "TurnIndustriesOnOffAction" => new TurnIndustriesOnOffActionReader(obj),
         "VineRotAction" => new VineRotActionReader(obj),
@@ -318,11 +330,17 @@ namespace Assets.Code.Stronghold2.S2MReader
         "WolfSpawnRateAction" => new WolfSpawnRateActionReader(obj),
 
         // Triggers
+        "AfterBriefingTrigger" => new AfterBriefingTriggerReader(obj),
         "AllYourTroopsDeadTrigger" => new AllYourTroopsDeadTriggerReader(obj),
         "AlwaysTrigger" => new AlwaysTriggerReader(obj),
         "AnyEnemyOnMapTrigger" => new AnyEnemyOnMapTriggerReader(obj),
         "AnyEnemyTroopOnMapTrigger" => new AnyEnemyTroopOnMapTriggerReader(obj),
         "BreachInWallTrigger" => new BreachInWallTriggerReader(obj),
+        "ConstructedBuildingCompleteTrigger" => new ConstructedBuildingCompleteTriggerReader(obj),
+        "ConstructedBuildingPercentCompleteTrigger" => new ConstructedBuildingPercentCompleteTriggerReader(obj),
+        "ControlNumEstatesTrigger" => new ControlNumEstatesTriggerReader(obj),
+        "CustomChapter1Trigger" => new CustomChapter1TriggerReader(obj),
+        "CustomTriggerTakeEstate6" => new CustomTriggerTakeEstate6Reader(obj),
         "CustomTriggerWilliamReachKeep" => new CustomTriggerWilliamReachKeepReader(obj),
         "EnemyGoldAcquiredTrigger" => new EnemyGoldAcquiredTriggerReader(obj),
         "EnemyGoodsAcquiredTrigger" => new EnemyGoodsAcquiredTriggerReader(obj),
@@ -335,6 +353,7 @@ namespace Assets.Code.Stronghold2.S2MReader
         "LordDamagedTrigger" => new LordDamagedTriggerReader(obj),
         "LordDiesTrigger" => new LordDiesTriggerReader(obj),
         "MultipleLordsDeadTrigger" => new MultipleLordsDeadTriggerReader(obj),
+        "NoBearsOnMapTrigger" => new NoBearsOnMapTriggerReader(obj),
         "NoCriminalsTrigger" => new NoCriminalsTriggerReader(obj),
         "NoEnemyOrInvasionsLeftTrigger" => new NoEnemyOrInvasionsLeftTriggerReader(obj),
         "NoFoodInGranaryTrigger" => new NoFoodInGranaryTriggerReader(obj),
@@ -342,12 +361,17 @@ namespace Assets.Code.Stronghold2.S2MReader
         "NoMessagesPlayingTrigger" => new NoMessagesPlayingTriggerReader(obj),
         "NoPeopleLeftTrigger" => new NoPeopleLeftTriggerReader(obj),
         "NoRatsInYourEstatesTrigger" => new NoRatsInYourEstatesTriggerReader(obj),
+        "NoWolvesOnMapTrigger" => new NoWolvesOnMapTriggerReader(obj),
+        "NumQuestsCompleteTrigger" => new NumQuestsCompleteTriggerReader(obj),
         "OtherLordsKillsLordXTrigger" => new OtherLordsKillsLordXTriggerReader(obj),
         "OutlawCampDestroyedTrigger" => new OutlawCampDestroyedTriggerReader(obj),
         "PercentTroopsKilledTrigger" => new PercentTroopsKilledTriggerReader(obj),
         "PlayerKillsLordXTrigger" => new PlayerKillsLordXTriggerReader(obj),
         "PopulationReachedTrigger" => new PopulationReachedTriggerReader(obj),
+        "QuestCompleteTrigger" => new QuestCompleteTriggerReader(obj),
+        "QuestNotCompleteTrigger" => new QuestNotCompleteTriggerReader(obj),
         "RescueLordTrigger" => new RescueLordTriggerReader(obj),
+        "SingleQuestCompleteTrigger" => new SingleQuestCompleteTriggerReader(obj),
         "SpecificEnemyLordDiesTrigger" => new SpecificEnemyLordDiesTriggerReader(obj),
         "SpecificLordKillsLordXTrigger" => new SpecificLordKillsLordXTriggerReader(obj),
         // S2Game has many object types that are not decoded yet. Retaining their
@@ -367,6 +391,7 @@ namespace Assets.Code.Stronghold2.S2MReader
         || exception is ArgumentException
         || exception is IndexOutOfRangeException)
       {
+        Debug.LogWarning($"DECODE-FAIL {obj.Type} (id {obj.Id}): {exception.GetType().Name}: {exception.Message} at {exception.StackTrace}");
         Debug.Log($"Could not decode {obj.Type} ({obj.Id}); preserving its raw payload: {exception.Message}");
         var rawPayload = new byte[serializedPayload.Length - sizeof(int)];
         Buffer.BlockCopy(serializedPayload, 0, rawPayload, 0, rawPayload.Length);

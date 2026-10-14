@@ -24,3 +24,5 @@ The first value was previously described as an "author presence flag." It is act
   - +4 bytes: value (`int32`)
 
 Known keys are `balanced`, `lastsave`, `mapsize`, `maxplayers`, and `version`. Treat unknown keys as valid options and preserve them. `mapsize` is optional and can be inferred from a square terrain plane when absent.
+
+**2026-10-08:** a fifth `type` value exists: **`historical`**, used by the 19 `.s2c` "historical castle" maps (its MapHeader object counterpart is the int 1). All 67 shipped files are exactly kingmaker 21 / historical 19 / warcampaign 15 / peacecampaign 4 / freebuild 8. See [VariantPayloads](./MapHeaderSegment/Actions%20and%20Triggers/VariantPayloads.md).
