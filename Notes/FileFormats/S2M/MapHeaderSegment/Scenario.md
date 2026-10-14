@@ -42,3 +42,5 @@
 	- 0 = AI places buildings
 	- 1 = Use map buildings
 - +4 bytes = unknown
+
+**Corrected 2026-10-08 (all 67 shipped maps):** the "+30 bytes unknown" above is `{i32 n}{n zero bytes}{i32 3}{i32 84}{i32 0}`. The reference map that produced the note has n = 14 (4 + 14 + 12 = 30); the shipped maps use n = 8, 9 or 14, so the fixed 30-byte skip ran past the payload on 24 maps. See [VariantPayloads](./Actions%20and%20Triggers/VariantPayloads.md).

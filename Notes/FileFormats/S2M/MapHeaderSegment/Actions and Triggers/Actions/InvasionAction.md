@@ -108,3 +108,7 @@
 	- **Note**: If this is 1 but "Invasion warning" is 0 then it is considered "Normal Message" setting in the editor UI
 	- 0 = No warnings
 	- 1 = Warnings are enabled
+
+**Variant note (2026-10-08, verified on all 67 shipped maps):** [VariantPayloads](./VariantPayloads.md) in `Actions and Triggers/` records the byte counts and variants the shipped maps actually use.
+
+`InvasionAction`'s payload is two sections: the marker's byte-length (136) is the invasion-point section ending with the 30 unit counts, and the target section follows as `{i32 1}{i32 targetSectionByteCount}` with `targetSectionByteCount` = 19 on campaign maps and 18 on the older builder — the last byte (warnings enabled) is absent in the 18-byte form.

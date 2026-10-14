@@ -14,7 +14,28 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
       Object = obj;
     }
 
-    protected void ReadDataPayloadMarker(BinaryReader reader, bool isEmpty)
+    /// <summary>
+    /// True when at least <paramref name="count"/> payload bytes remain before the
+    /// object's trailer marker. Action and trigger objects vary between map files:
+    /// some writers omit optional trailing fields (InvasionAction's warning flag),
+    /// so a reader must check before reading a field that may be absent.
+    /// </summary>
+    protected static bool HasPayloadBytes(BinaryReader reader, int count)
+    {
+      // The trailer is always the payload's last 4 bytes, so it is not available
+      // to field readers.
+      return reader.BaseStream.Length - reader.BaseStream.Position - sizeof(int) >= count;
+    }
+
+    /// <summary>
+    /// Reads the marker that starts an action's or trigger's data payload:
+    /// {marker}{i32 instance index} and, only when the object carries data,
+    /// {i32 unknown}{i32 payload byte count}. An object with an empty payload puts
+    /// its trailer straight after the instance index, so presence is decided from
+    /// the bytes that remain rather than from the caller's expectation.
+    /// </summary>
+    /// <returns>The declared data payload byte count, 0 when the object has no data.</returns>
+    protected int ReadDataPayloadMarker(BinaryReader reader, bool isEmpty)
     {
       // Data payload marker
       var payloadMarker = reader.ReadInt32();
@@ -23,13 +44,17 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
         throw new InvalidDataException($"Expected data payload marker {S2MReaderUtils.DataPayloadMarker}, but got {payloadMarker}");
       }
 
+      // Instance index of the action/trigger within its map.
       reader.ReadInt32();
 
-      if (!isEmpty)
-      {
-        reader.ReadInt32();
-        reader.ReadInt32(); // This is the length of bytes in the data payload, but we ignore it
-      }
+      // The {unknown, payload byte count} pair exists only on data objects; both
+      // ints must fit before the trailer for it to be present.
+      if (!HasPayloadBytes(reader, 2 * sizeof(int))) return 0;
+
+      reader.ReadInt32();
+      // This is the length of bytes in the data payload, which readers use as the
+      // authoritative size when their own field list is shorter than the data.
+      return reader.ReadInt32();
     }
 
     public void ReadObjectTrailerMarker(BinaryReader reader)

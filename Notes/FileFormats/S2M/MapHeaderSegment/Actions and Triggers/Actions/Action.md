@@ -17,3 +17,7 @@ If the action is known to have data:
 
 If the action is known to have **no data**, then you will simply consume the object trailer marker
 - +4 bytes = Object trailer market (AF1EFFFF)
+
+**Variant note (2026-10-08, verified on all 67 shipped maps):** [VariantPayloads](./VariantPayloads.md) in `Actions and Triggers/` records the byte counts and variants the shipped maps actually use.
+
+In particular, whether an object carries data must be decided from the bytes that remain before the trailer, not from the type: `FireAction` has a data payload (byte-length 4 = number of fires) and `OutlawCampDestroyedTrigger` is empty-shaped, i.e. the reverse of the assumption the first reader pass made.

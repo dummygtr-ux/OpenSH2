@@ -7,21 +7,23 @@ namespace Assets.Code.Stronghold2.TerrainRendering
   public sealed class S2MWaterSettings
   {
     [Min(0.0001f)]
-    public float HorizontalCellSize = 1f;
+    [Tooltip("Unity world units per S2M map cell: 2 = metres (see S2MWorldScale). Must match S2MTerrainSettings.")]
+    public float HorizontalCellSize = S2MWorldScale.MetresPerCell;
 
     [Min(0.000001f)]
-    public float HeightUnitScale = 1f / 1024f;
+    [Tooltip("Unity vertical units per raw S2M height unit (metres = raw/512, see S2MWorldScale). Must match S2MTerrainSettings.")]
+    public float HeightUnitScale = S2MWorldScale.HeightUnitScale;
 
-    [Tooltip("Vertical offset from the decoded river plane. A negative value seats water below the nearby terrain edge.")]
-    public float RiverSurfaceOffset = -0.25f;
+    [Tooltip("Vertical offset in metres from the decoded river plane. A negative value seats water below the nearby terrain edge. Doubled from the pre-rescale -0.25 cell units to keep the same seating.")]
+    public float RiverSurfaceOffset = -0.5f;
 
-    [Tooltip("Vertical offset from the decoded sea plane. A negative value seats water below the nearby terrain edge.")]
-    public float SeaSurfaceOffset = -0.25f;
+    [Tooltip("Vertical offset in metres from the decoded sea plane. A negative value seats water below the nearby terrain edge. Doubled from the pre-rescale -0.25 cell units.")]
+    public float SeaSurfaceOffset = -0.5f;
 
-    [Tooltip("Vertical offset from the decoded pitch/swamp plane. A negative value seats water below the nearby terrain edge.")]
-    public float PitchSwampSurfaceOffset = -0.25f;
+    [Tooltip("Vertical offset in metres from the decoded pitch/swamp plane. A negative value seats water below the nearby terrain edge. Doubled from the pre-rescale -0.25 cell units.")]
+    public float PitchSwampSurfaceOffset = -0.5f;
 
-    [Tooltip("Vertical offset from the decoded moat plane. A negative value seats water below the nearby terrain edge.")]
+    [Tooltip("Vertical offset in metres from the decoded moat plane.")]
     public float MoatSurfaceOffset = -0.0f;
 
     [Tooltip("HeightLayer corner plane used for the water surface. Controlled flat-water probes identify plane 1.")]

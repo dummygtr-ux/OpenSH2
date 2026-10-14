@@ -414,8 +414,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Main
   gameScale: 1
   vegetationRenderSettings:
-    HorizontalCellSize: 1
-    HeightUnitScale: 0.0009765625
+    HorizontalCellSize: 2
+    HeightUnitScale: 0.001953125
     FlipX: 0
     FlipZ: 0
     ApplyAppearanceScale: 1

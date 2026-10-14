@@ -61,7 +61,16 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
       byte[] flowDirections = GetGrid(blocks, FlowDirectionBlockTag, cellCount);
       byte[] landscapeFeatureValues = GetGrid(blocks, LandscapeFeatureBlockTag, cellCount);
       Color32[] terrainTintColors = GetColorGrid(blocks, TerrainTintBlockTag, cellCount);
-      byte[] terrainTextureRotationValues = GetGrid(blocks, TerrainTextureRotationBlockTag, cellCount);
+      // Standard maps (kingmaker and campaign) ship no tag-30 block at all;
+      // only some controlled probe maps carry the rotation grid. Tolerate absence.
+      byte[] terrainTextureRotationValues = null;
+      if (blocks.TryGetValue(TerrainTextureRotationBlockTag, out byte[] rotationBlock)
+        && rotationBlock.Length >= cellCount)
+      {
+        var clippedRotation = new byte[cellCount];
+        Buffer.BlockCopy(rotationBlock, 0, clippedRotation, 0, cellCount);
+        terrainTextureRotationValues = Transpose(clippedRotation, side);
+      }
 
       return new Landscape
       {
@@ -78,7 +87,7 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
           LandscapeFeatureValues = Transpose(landscapeFeatureValues, side)
         },
         TerrainTintColors = terrainTintColors,
-        TerrainTextureRotationValues = Transpose(terrainTextureRotationValues, side),
+        TerrainTextureRotationValues = terrainTextureRotationValues,
         RawPayload = payload
       };
     }

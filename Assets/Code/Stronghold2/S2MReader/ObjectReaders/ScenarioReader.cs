@@ -37,8 +37,21 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders
       // Read unknown 02 00 00 00
       reader.ReadInt32();
 
-      // Read unknown 30 bytes
-      reader.ReadBytes(30);
+      // Read unknown variable-length block: an int byte count followed by that
+      // many bytes (all zero in every shipped map), then three constant ints
+      // (3, 84, 0). OpenSH2's notes recorded this as a fixed 30 bytes because
+      // their reference map stores a count of 14 (4 + 14 + 12 = 30); the shipped
+      // maps use counts of 8, 9 and 14, which is why campaign maps used to throw
+      // EndOfStream here.
+      int unknownBlockByteCount = reader.ReadInt32();
+      if (unknownBlockByteCount < 0 || unknownBlockByteCount > 4096)
+      {
+        throw new InvalidDataException($"Implausible Scenario unknown block byte count {unknownBlockByteCount}.");
+      }
+      reader.ReadBytes(unknownBlockByteCount);
+      reader.ReadInt32();
+      reader.ReadInt32();
+      reader.ReadInt32();
 
       // Read 16 estate ownership Lord Ids
       for (int i = 0; i < 16; i++)

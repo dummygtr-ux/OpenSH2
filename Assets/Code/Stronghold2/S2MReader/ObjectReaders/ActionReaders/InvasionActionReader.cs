@@ -101,7 +101,15 @@ namespace Assets.Code.Stronghold2.S2MReader.ObjectReaders.ActionReaders
       reader.ReadBoolean();
 
       obj.IncludeLordInInvasion = reader.ReadBoolean();
-      obj.AreInvasionWarningsEnabled = reader.ReadBoolean();
+
+      // The last field is optional: campaign maps written by an older/other
+      // builder end their target section one byte earlier (the section's own
+      // byte count at the payload header is 18 instead of 19), so the flag below
+      // is absent there. Every shipped InvasionAction parses either way.
+      if (HasPayloadBytes(reader, 1))
+      {
+        obj.AreInvasionWarningsEnabled = reader.ReadBoolean();
+      }
 
       ReadObjectTrailerMarker(reader);
 

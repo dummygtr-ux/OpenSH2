@@ -47,7 +47,8 @@ namespace Assets.Code.UI
         anchorX: 0f,
         pivotX: 0f,
         aspectRatio: 381f / 768f,
-        parent: parent);
+        parent: parent,
+        gameObjectName: "MainMenuCurtainOpenPlayer");
 
       isVisible = true;
     }
@@ -105,6 +106,16 @@ namespace Assets.Code.UI
       lastParentHeight = 0f;
     }
 
+    /// <summary>
+    /// The curtain's second half, driven by the first half's own end: the
+    /// shipped art is curtain_animation ONCE (the curtains swinging shut) and
+    /// then curtain_idle looping (the settled drape), the same
+    /// play-once-then-hand-over shape the intro chain has
+    /// (Game.PlayIntroVideosAsync). The finished callback comes from
+    /// VideoPlayerUI's loopPointReached, so this method is only ever called
+    /// when the open clip really ended; the finished player destroys itself
+    /// right after this returns.
+    /// </summary>
     private void PlayCurtainIdleLoop()
     {
       if (!isVisible)
@@ -122,7 +133,8 @@ namespace Assets.Code.UI
         anchorX: 0f,
         pivotX: 0f,
         aspectRatio: 381f / 768f,
-        parent: parent);
+        parent: parent,
+        gameObjectName: "MainMenuCurtainIdlePlayer");
     }
 
     private string GetCachedVideoPath(string originalBikPath)

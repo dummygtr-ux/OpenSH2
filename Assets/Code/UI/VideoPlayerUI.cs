@@ -19,6 +19,16 @@ namespace Assets.Code.UI
     private bool isLooping;
     private bool isCompleted;
 
+    /// <summary>
+    /// True once this player's playback has actually STARTED (the player's own
+    /// event, not a guess from Prepare/Play having been called). A caller that
+    /// wants to stop a clip early must wait for this: stopping a player that is
+    /// still PREPARING wedges Unity's video module for the next players
+    /// (measured - FORMATS.md ".bik"), so "has it started" is the one fact a
+    /// skip has to read first.
+    /// </summary>
+    public bool HasStarted { get; private set; }
+
     public static VideoPlayerUI Play(
       string videoPath, Action onFinished = null, int fadeOutMs = 0, int sortingOrder = 1000, bool isLooping = false, float width = 0f, float height = 0f, float anchorX = 0.5f, float anchorY = 0.5f, float pivotX = 0.5f, float pivotY = 0.5f, float offsetX = 0f, float offsetY = 0f, RectTransform parent = null, string gameObjectName = "VideoPlayerUI", float aspectRatio = 0f)
     {
@@ -165,6 +175,7 @@ namespace Assets.Code.UI
 
     private void OnStarted(VideoPlayer source)
     {
+      HasStarted = true;
       Debug.Log("Video playback started.");
     }
 

@@ -7,11 +7,12 @@ namespace Assets.Code.Stronghold2.TerrainRendering
   public class S2MTerrainSettings
   {
     [Min(0.0001f)]
-    public float HorizontalCellSize = 1f;
+    [Tooltip("Unity world units per S2M map cell: 2 = the scene is in metres (1 cell = 2 m, see S2MWorldScale). Must match every other map renderer so the layers stay aligned.")]
+    public float HorizontalCellSize = S2MWorldScale.MetresPerCell;
 
-    [Tooltip("Unity vertical units per raw S2M height unit. Editor probes place the six standard terrain levels between 0 and 10240, making 1/1024 the best current calibration.")]
+    [Tooltip("Unity vertical units per raw S2M height unit. Raw heights are 1024 per cell, so metres = raw/512 (see S2MWorldScale); 1/1024 would render terrain and walls at half height.")]
     [Min(0.000001f)]
-    public float HeightUnitScale = 1f / 1024f;
+    public float HeightUnitScale = S2MWorldScale.HeightUnitScale;
 
     [Tooltip("Reverse the serialized X axis when generating the terrain mesh.")]
     public bool FlipX;

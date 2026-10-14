@@ -152,7 +152,7 @@ namespace Assets.Code.Stronghold2.ModelRendering
       Granny2ModelRenderSettings settings,
       Granny2GeneratedModelResources resources)
     {
-      bool isFoliage = IsFoliageMaterial(data);
+      bool isFoliage = IsFoliageMaterial(data, settings.AlphaTestMode);
       Material material;
       if (settings.FallbackMaterial != null)
       {
@@ -196,20 +196,44 @@ namespace Assets.Code.Stronghold2.ModelRendering
       return material;
     }
 
-    private static bool IsFoliageMaterial(Granny2MaterialData data)
+    private static bool IsFoliageMaterial(Granny2MaterialData data, Gr2AlphaTestMode alphaTestMode)
     {
       string textureName = Path.GetFileNameWithoutExtension(data?.TexturePath ?? string.Empty);
-      // Bark alpha is not an opacity mask. It must remain opaque, while the
-      // remaining landscape-tree texture groups are alpha-tested foliage cards.
-      return !textureName.StartsWith("bark", StringComparison.OrdinalIgnoreCase);
+      switch (alphaTestMode)
+      {
+        case Gr2AlphaTestMode.Never:
+          return false;
+        case Gr2AlphaTestMode.AlphaTestSuffix:
+          // The game marks genuine cutouts in the texture file name itself
+          // ("hovel_small_roof.alphatest.dds"); other building textures carry
+          // non-mask alpha (light/specular data) that must not be clipped.
+          return textureName.Contains(".alphatest", StringComparison.OrdinalIgnoreCase);
+        default:
+          // Bark alpha is not an opacity mask. It must remain opaque, while the
+          // remaining landscape-tree texture groups are alpha-tested foliage cards.
+          return !textureName.StartsWith("bark", StringComparison.OrdinalIgnoreCase);
+      }
     }
 
-    private static string ResolveTexturePath(string gr2Path, string embeddedPath)
+    public static string ResolveTexturePath(string gr2Path, string embeddedPath)
     {
-      if (string.IsNullOrWhiteSpace(embeddedPath)) return null;
-      string fileName = Path.GetFileNameWithoutExtension(embeddedPath) + ".dds";
-      string sibling = Path.Combine(Path.GetDirectoryName(gr2Path) ?? string.Empty, fileName);
-      return File.Exists(sibling) ? sibling : null;
+      if (string.IsNullOrWhiteSpace(embeddedPath) || string.IsNullOrWhiteSpace(gr2Path)) return null;
+      try
+      {
+        // Embedded exporter paths are Windows-style ("Z:\...\Tree009_mask.TGA");
+        // normalize separators so Unix path APIs see real directory separators.
+        embeddedPath = embeddedPath.Replace('\\', '/');
+        string fileName = Path.GetFileNameWithoutExtension(embeddedPath) + ".dds";
+        if (string.IsNullOrWhiteSpace(fileName) || fileName == ".dds") return null;
+        string sibling = Path.Combine(Path.GetDirectoryName(gr2Path) ?? string.Empty, fileName);
+        return File.Exists(sibling) ? sibling : null;
+      }
+      catch (ArgumentException)
+      {
+        // Embedded exporter paths can be Windows-style ("Z:\..."); some path
+        // APIs reject those on Unix. Treat them as unresolvable.
+        return null;
+      }
     }
 
     private static Vector3 ConvertAxis(Vector3 value, bool convert) => convert
@@ -261,7 +285,7 @@ namespace Assets.Code.Stronghold2.ModelRendering
     }
   }
 
-  internal sealed class Granny2GeneratedModelResources : MonoBehaviour
+  public sealed class Granny2GeneratedModelResources : MonoBehaviour
   {
     private readonly List<UnityEngine.Object> generated = new();
     public void Add(UnityEngine.Object value) { if (value != null) generated.Add(value); }

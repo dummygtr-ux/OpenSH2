@@ -28,6 +28,23 @@ namespace Assets.Code.UI
       {
         texture = TGALoader.LoadTGA(texturePath);
       }
+      else if (texturePath.EndsWith(".bmp"))
+      {
+        // Unity's ImageConversion.LoadImage does not read BMP, and the install
+        // ships frontend art that way (the campaign screen's one button among
+        // 283 .bmp files), so BMP goes through the project's own reader - with
+        // the same deal the other formats get: a failure logs and returns null
+        // rather than taking the screen down with it.
+        try
+        {
+          texture = BMPLoader.LoadBMP(texturePath);
+        }
+        catch (System.Exception error)
+        {
+          Debug.LogError($"Failed to load UI texture: {texturePath} ({error.Message})");
+          return null;
+        }
+      }
       else
       {
         byte[] textureBytes = File.ReadAllBytes(texturePath);
